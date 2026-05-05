@@ -3,30 +3,32 @@ name: Deploy to Elastic Beanstalk
 on:
   push:
     branches:
-      - main  # Deploy when code is pushed to the "main" branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the code
-      - name: Checkout code
+      # Step 1: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up AWS CLI
-      - name: Configure AWS credentials
+      # Step 2: Set AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ vars.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # Step 3: Deploy to Elastic Beanstalk
+      # Step 3: Install EB CLI
+      - name: Install Elastic Beanstalk CLI
+        run: |
+          pip install awsebcli
+
+      # Step 4: Deploy the application
       - name: Deploy to Elastic Beanstalk
         run: |
-          npx elastic-beanstalk-deploy \
-            --application-name cmtr-740mo2tq-app \
-            --environment-name cmtr-740mo2tq-env \
-            --region ${{ secrets.AWS_REGION }} \
-            --source "./"
+          eb init -p python-3.7 cmtr-740mo2tq-app --region us-east-1
+          eb deploy cmtr-740mo2tq-env
